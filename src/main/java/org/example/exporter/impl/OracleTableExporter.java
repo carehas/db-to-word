@@ -6,35 +6,27 @@ import org.example.exporter.DatabaseTableExporter;
 import org.example.utils.DatabaseConnection;
 import org.example.utils.TableExportCommon;
 
-import java.sql.*;
-import java.util.ArrayList;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @BelongsProject: db-to-word
  * @BelongsPackage: org.example.exporter.impl
- * @CreateTime: 2025-11-03  17:02
- * @Description: PostGreSQL数据库表结构导出实现类
+ * @CreateTime: 2025-11-09  16:26
+ * @Description: Oracle数据库表格导出功能
  * @Version: 1.0
  */
-@ExportConfig(databaseType = "postgresql")
-public class PostGreSQLTableExporter extends DatabaseTableExporter {
-
+@ExportConfig(databaseType = "oracle")
+public class OracleTableExporter extends DatabaseTableExporter {
     private String databaseName;
     private Connection connection;
-    public PostGreSQLTableExporter() throws Exception {
-    }
-
     @Override
-    public void getConnection(String host, Integer port, String username,
-                              String password, String databaseName, String databaseType) {
-        this.databaseName = databaseName;
+    public void getConnection(String host, Integer port, String username, String password, String database, String databaseType) {
+        this.databaseName = database;
         try {
-            Class.forName("org.postgresql.Driver");
-            connection = DatabaseConnection.getConnection(host, port, username, password, databaseName, databaseType);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+            connection = DatabaseConnection.getConnection(host, port, username, password, database, databaseType);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -49,16 +41,14 @@ public class PostGreSQLTableExporter extends DatabaseTableExporter {
     public List<ColumnInfo> getTableStructure(String tableName) throws SQLException {
         return TableExportCommon.getTableStructure(connection, tableName);
     }
-    /***
-     * @description: 关闭数据库
-     */
+
     @Override
     public void close() throws SQLException {
         if (connection != null && !connection.isClosed()){
             connection.close();
         }
     }
-    //获取数据库的名字
+
     @Override
     public String getDatabaseName() {
         return databaseName;

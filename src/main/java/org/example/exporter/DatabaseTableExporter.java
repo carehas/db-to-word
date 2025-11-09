@@ -1,4 +1,4 @@
-package org.example.exporter.impl;
+package org.example.exporter;
 
 import org.example.dto.ColumnInfo;
 
@@ -22,6 +22,6 @@ public abstract class DatabaseTableExporter {
 
     public abstract List<ColumnInfo> getTableStructure(String tableName) throws SQLException;
 
-    public abstract boolean isPrimaryKey(DatabaseMetaData metaData, String tableName, String columnName) throws SQLException;
     public abstract void close() throws SQLException;
+    public abstract String getDatabaseName();
 }

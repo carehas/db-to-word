@@ -3,7 +3,7 @@ package org.example;
 import java.util.HashMap;
 import java.util.concurrent.Callable;
 
-import org.example.exporter.impl.DatabaseTableExporter;
+import org.example.exporter.DatabaseTableExporter;
 import org.example.utils.ReflectConstruct;
 import org.example.utils.WordDocumentGenerator;
 import picocli.CommandLine;
@@ -32,10 +32,10 @@ import picocli.CommandLine.*;
 public class DatabaseExportCommand implements Callable<Integer> {
 
     // ------------------- 命令行选项 (Options) -------------------
-    @Option(names = {"-h", "--host"}, description = "数据库主机地址", defaultValue = "localhost")
+    @Option(names = {"-h", "--host"}, description = "数据库主机地址", required = true)
     private String host;
 
-    @Option(names = {"-P", "--port"}, description = "数据库端口", defaultValue = "3306")
+    @Option(names = {"-P", "--port"}, description = "数据库端口", required = true)
     private int port;
 
     @Option(names = {"-d", "--database"}, description = "数据库名称 (必需)", required = true)
@@ -52,7 +52,6 @@ public class DatabaseExportCommand implements Callable<Integer> {
 
     @Option(names = {"-o", "--output"}, description = "输出的Word文件路径", defaultValue = "output/database_structure.docx")
     private String outputPath;
-
 
     @Override
     public Integer call() throws Exception {
@@ -98,7 +97,6 @@ public class DatabaseExportCommand implements Callable<Integer> {
             System.err.println("发生错误: " + e.getMessage());
             return 1; // 返回非0值表示失败
         } finally {
-
             if (exporter != null) {
                 exporter.close();
             }

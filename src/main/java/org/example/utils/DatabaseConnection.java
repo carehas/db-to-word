@@ -3,6 +3,7 @@ package org.example.utils;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 
 /**
  * @BelongsProject: db-to-word
@@ -13,23 +14,26 @@ import java.sql.DriverManager;
  */
 public class DatabaseConnection {
 
-
-    private String url;
-
+    private String host;
+    private Integer port;
     private String username;
-
     private String password;
+    private String databaseName;
+    private String databaseType;
 
-    public DatabaseConnection(String url, String username, String password) {
-        this.url = url;
-        this.username = username;
-        this.password = password;
-    }
-
+    private static String url;
     //连接数据库
-    public Connection getConnection() throws Exception {
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        return DriverManager.getConnection(url, username, password);
+    public static Connection getConnection(String host, Integer port, String username,
+                                    String password, String databaseName, String databaseType) throws Exception {
+        // 构建 JDBC URL 数据库的名字填到了 jdbcUrl 中
+        url = java.lang.String.format("jdbc:%s://%s:%d/%s?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC",
+                databaseType, host, port, databaseName);
+        System.out.println("JDBC URL: " + url);
+        try {
+            return DriverManager.getConnection(url, username, password);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

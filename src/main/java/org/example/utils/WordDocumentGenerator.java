@@ -2,7 +2,7 @@ package org.example.utils;
 
 import org.apache.poi.xwpf.usermodel.*;
 import org.example.dto.ColumnInfo;
-import org.example.exporter.impl.DatabaseTableExporter;
+import org.example.exporter.DatabaseTableExporter;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTShd;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTcPr;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STShd;
@@ -80,6 +80,8 @@ public class WordDocumentGenerator {
             }
 
             // 保存文档
+            String exporterDatabaseName = exporter.getDatabaseName();
+            outputFilePath = outputFilePath.replace(".docx", "_" + exporterDatabaseName + ".docx");
             File outputFile = new File(outputFilePath);
             File parentDir = outputFile.getParentFile();
             if (parentDir != null && !parentDir.exists()) {

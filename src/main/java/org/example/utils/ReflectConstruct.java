@@ -1,7 +1,7 @@
 package org.example.utils;
 
 import org.example.config.ExportConfig;
-import org.example.exporter.impl.DatabaseTableExporter;
+import org.example.exporter.DatabaseTableExporter;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 
