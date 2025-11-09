@@ -1,14 +1,10 @@
 package org.example;
 
-import java.io.Console;
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Properties;
+import java.util.HashMap;
 import java.util.concurrent.Callable;
 
 import org.example.exporter.impl.DatabaseTableExporter;
+import org.example.utils.ReflectConstruct;
 import org.example.utils.WordDocumentGenerator;
 import picocli.CommandLine;
 import picocli.CommandLine.*;
@@ -51,58 +47,58 @@ public class DatabaseExportCommand implements Callable<Integer> {
     @Option(names = {"-p", "--password"}, description = "数据库密码", required = true)
     private String password;
 
-    @Option(names = {"--driver"}, description = "JDBC驱动类名", defaultValue = "com.mysql.cj.jdbc.Driver")
-    private String driver;
+    @Option(names = {"-t", "--databaseType"}, description = "数据库类型 (必需)", required = true)
+    private String databaseType;
 
-    @Option(names = {"--url"}, description = "完整的JDBC URL (如果提供，将覆盖 host, port, database)")
-    private String jdbcUrl;
-
-    //@Option(names = {"-o", "--output"}, description = "输出的Word文件路径", defaultValue = "database_structure.docx")
-    private String outputPath = "output/database_structure.docx";
-
-    /*@Option(names = {"--config"}, description = "配置文件路径 (properties文件)，配置项会覆盖命令行参数")
-    private java.nio.file.Path configFile;*/
+    @Option(names = {"-o", "--output"}, description = "输出的Word文件路径", defaultValue = "output/database_structure.docx")
+    private String outputPath;
 
 
     @Override
     public Integer call() throws Exception {
-        // 1. picocli 已经自动将命令行输入解析并赋值给了上面的成员变量
-        //    例如: java -jar app.jar -d mydb -u admin -p secret -o mydoc.docx
-        //         会使 database="mydb", username="admin", password="secret", outputPath="mydoc.docx"
-
-        // 2. 在这里使用这些参数
+        /***
+          1. picocli 已经自动将命令行输入解析并赋值给了上面的成员变量
+         例如: java -jar app.jar -d mydb -u admin -p secret -o mydoc.docx
+         会使 database="mydb", username="admin", password="secret", outputPath="mydoc.docx"
+         */
         System.out.println("正在准备连接数据库...");
+
         System.out.println("主机: " + host);
+
         System.out.println("端口: " + port);
+
         System.out.println("数据库: " + database);
+
         System.out.println("用户名: " + username);
-        // 注意：不要打印密码！
+
         System.out.println("输出文件: " + outputPath);
 
-        // 构建 JDBC URL
-        String jdbcUrl = String.format("jdbc:mysql://%s:%d/%s?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC", host, port, database);
-        System.out.println("JDBC URL: " + jdbcUrl);
+        //根据传入的参数，创建一个数据库表结构导出器
+        HashMap<String, DatabaseTableExporter> exporterHashMap = ReflectConstruct.scanTableExporter("org.example.exporter");
 
-        DatabaseTableExporter exporter = null;
+        DatabaseTableExporter exporter = exporterHashMap.get(databaseType);
+
+        if (exporter == null) {
+            System.out.println("不支持的数据库类型: " + databaseType);
+            System.out.println("可以自行添加您想使用的数据库类型！");
+            return 1;
+        }
         try {
-            // 3. 使用参数创建 DatabaseTableExporter 实例
-            exporter = new DatabaseTableExporter(jdbcUrl, username, password, driver);
+            //根据参数建立连接
+            exporter.getConnection(host, port, username, password, database, databaseType);
 
-            // 5. 创建 Word 生成器并导出
-            System.out.println("正在生成Word文档...");
             //需要获取表的结构
             WordDocumentGenerator generator = new WordDocumentGenerator();
             generator.exportToWord(outputPath, exporter);
 
             System.out.println("完成！文档已保存至: " + outputPath);
-            return 0; // 返回 0 表示成功
+            return 0;
 
         } catch (Exception e) {
             System.err.println("发生错误: " + e.getMessage());
-            e.printStackTrace(); // 开发阶段可以打印堆栈，生产环境可移除
             return 1; // 返回非0值表示失败
         } finally {
-            // 6. 确保资源被释放
+
             if (exporter != null) {
                 exporter.close();
             }
@@ -171,7 +167,7 @@ public class DatabaseExportCommand implements Callable<Integer> {
         System.setProperty("picocli.color.enabled", "true");
 
         int exitCode = new CommandLine(new DatabaseExportCommand())
-                .setCaseInsensitiveEnumValuesAllowed(true) // 枚举值不区分大小写
+                .setCaseInsensitiveEnumValuesAllowed(true)
                 .execute(args);
         System.exit(exitCode);
     }

@@ -2,9 +2,7 @@ package org.example.utils;
 
 import org.apache.poi.xwpf.usermodel.*;
 import org.example.dto.ColumnInfo;
-import org.example.exporter.Exporter;
 import org.example.exporter.impl.DatabaseTableExporter;
-import org.example.exporter.impl.MySQLTableExporter;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTShd;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTcPr;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STShd;
